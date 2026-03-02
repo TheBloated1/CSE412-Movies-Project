@@ -1,5 +1,6 @@
 import psycopg2
 import os
+from pathlib import Path
 
 # Connect to the Database with the name "project" and user $USER. 
 #(NOTE: B/c server is localhost, a running PostgreSQL server with the name "project" is required for this code to work)
@@ -21,7 +22,6 @@ def getConnection(user_name):
 #This function should hard reset the database, removing all tables that previously existed
 def hardReset(user_name, conn):
     try:
-        conn.autocommit = True
         with conn.cursor() as cur:
             cur.execute("DROP SCHEMA public CASCADE;")
             cur.execute("CREATE SCHEMA public;")
@@ -31,16 +31,28 @@ def hardReset(user_name, conn):
     except Exception as e:
         print("Hard reset failed:\n ", e)
 
-#Get system user
-user_name = os.environ.get("USER")
-if user_name:
-    print("Assume DB user is:", user_name)
-else:
-    print("No $USER variable found, Connection Fails")
+#This function should set up the project database
+def importDatabase(conn):
+    path = os.getcwd()
+    path = path + "/netflix_titles.csv"
+    #TODO: import database from CSV
 
-conn = getConnection(user_name)
+#Get system user 
+#TODO: move all this to run.py when I am done testing
+def main():
+    user_name = os.environ.get("USER")
+    if user_name:
+        print("Assume DB user is:", user_name)
+    else:
+        print("No $USER variable found, Connection Fails")
+    conn = getConnection(user_name)
+    if conn:
+        print("Connection to PostGreSQL Established Succesfully!")
+        conn.autocommit = True
+    else:
+        print("Connection to PostGreSQL Encountered an Error!")
+        return
+    importDatabase(conn)
 
-if conn:
-    print("Connection to PostGreSQL Established Succesfully!")
-else:
-    print("Connection to PostGreSQL Encountered an Error!")
+if __name__ == "__main__":
+    main()
