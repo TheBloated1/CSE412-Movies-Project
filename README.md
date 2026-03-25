@@ -3,6 +3,7 @@
 ## Requirements
 
 - Flask 3.1.2 (pip install Flask)
+- psycopg2 2.9.11 (pip install psycopg2-binary) or (pip install psycopg2)
 
 ## Instructions
 
