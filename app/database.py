@@ -1,5 +1,6 @@
 import psycopg2
 import os
+from database_csv_import import import_csv_to_db
 from pathlib import Path
 
 # Connect to the Database with the name "project" and user $USER. 
@@ -22,9 +23,13 @@ def getConnection(user_name):
 #Hard reset the database, removing all tables that previously existed
 def hardReset(user_name, conn):
     print("!!!WARNING!!!\nDELETING ENTIRE DATABASE NOW\nARE YOU SURE?")
-    user_input = input("Press (1) to confirm, (2) to cancel:\n")
-    if user_input == 2:
-        return
+    while True:
+        user_input = input("Press (1) to confirm, (2) to cancel:\n")
+        if user_input == "2":
+            print("Database was not hard reset.")
+            return
+        elif user_input == "1":
+            break
     try:
         with conn.cursor() as cur:
             cur.execute("DROP SCHEMA public CASCADE;")
@@ -34,6 +39,7 @@ def hardReset(user_name, conn):
             cur.execute("COMMENT ON SCHEMA public IS \'standard public schema\'")
     except Exception as e:
         print("Hard reset failed: ", e)
+    print("Database hard reset success.")
 
 #Init tables for database
 def initDatabase(conn):
@@ -42,12 +48,7 @@ def initDatabase(conn):
     path = path + "/netflix_titles.csv"
     try:
         with conn.cursor() as cur:
-            cur.execute("""
-            CREATE TABLE IF NOT EXISTS country (
-                country_id SERIAL PRIMARY KEY,
-                name VARCHAR(64)
-            );
-            """)
+            # todo: duration is currently VARCHAR(64) because it can be either seasons or in minutes :(
             cur.execute("""
             CREATE TABLE IF NOT EXISTS media (
                 show_id SERIAL PRIMARY KEY,
@@ -55,9 +56,35 @@ def initDatabase(conn):
                 type VARCHAR(8),
                 release_year SMALLINT,
                 date_added DATE,
-                duration SMALLINT,
+                duration VARCHAR(64),
                 rating VARCHAR(8),
-                m_country_id INTEGER REFERENCES country(country_id)
+                description TEXT
+            );
+            """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS country (
+                country_id SERIAL PRIMARY KEY,
+                name VARCHAR(64) NOT NULL UNIQUE
+            );
+            """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS producedIn (
+                p_country_id INTEGER NOT NULL REFERENCES country(country_id),
+                p_show_id INTEGER NOT NULL REFERENCES media(show_id),
+                PRIMARY KEY(p_country_id, p_show_id)
+            );
+            """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS genre (
+                genre_id SERIAL PRIMARY KEY,
+                name VARCHAR(128) NOT NULL UNIQUE
+            );
+            """)
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS listedIn (
+                li_show_id INTEGER NOT NULL REFERENCES media(show_id),
+                li_genre_id INTEGER NOT NULL REFERENCES genre(genre_id),
+                PRIMARY KEY(li_show_id, li_genre_id)
             );
             """)
             #User roles defined here
@@ -87,11 +114,14 @@ def initDatabase(conn):
             );
             """)
             #I disagree with the schema, I'm making a person table to contain director / actor
+            # TODO: CURRENTLY MAKING PRIMARY_KEY ON FIRST_NAME, LAST_NAME, BUT THIS IS NOT IDEAL.
+            # BECAUSE THERE MAY BE DUPLICATE NAMES. IN THE FUTURE, MAYBE FIX.
             cur.execute("""
             CREATE TABLE IF NOT EXISTS person (
                 person_id SERIAL PRIMARY KEY,
                 first_name VARCHAR(64),
-                last_name VARCHAR(64)
+                last_name VARCHAR(64),
+                UNIQUE(first_name, last_name)
             );
             """)
             #TODO: Expand these lil baby tables (maybe with other csvs?) (Low prio, get it working first)
@@ -142,7 +172,9 @@ def main():
     else:
         print("Connection to PostGreSQL Encountered an Error!")
         return
+    #hardReset(user_name, conn)
     initDatabase(conn)
+    import_csv_to_db(conn)
     hardReset(user_name, conn)
 
 if __name__ == "__main__":

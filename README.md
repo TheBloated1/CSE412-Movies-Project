@@ -2,8 +2,14 @@
 
 ## Requirements
 
-- Flask 3.1.2 (pip install Flask)
-- psycopg2 2.9.11 (pip install psycopg2-binary) or (pip install psycopg2)
+### Packages
+- Flask 3.1.2 (```pip install Flask```)
+- psycopg2 2.9.11 (```pip install psycopg2-binary```) or (```pip install psycopg2```)
+- pandas 2.3.3 (```pip install pandas```)
+
+### Data
+- netflix_titles.csv (https://www.kaggle.com/datasets/shivamb/netflix-shows/data)
+    - Already provided in repository
 
 ## Instructions
 
@@ -12,7 +18,7 @@
 ```bash
 export PATH="/lib/postgresql/14/bin:$PATH"
 ```
-2. Start PostgreSQL on port 8888
+2. Start PostgreSQL Server on port 8888
 
 3. Create database named 'project':
 ```bash
@@ -31,8 +37,14 @@ createdb -h 127.0.0.1 -p 8888 -U $USER project
 ```bash
 psql -h 127.0.0.1 -p 8888 -U $USER -d project
 ```
+- Test init database/import .csv/delete database optionally:
+```bash
+cd app
+python3 database.py
+```
 
 ## Project Todo
 
 - Add PostgreSQL (start server in run script and add psycopg2 dependency)
 - Build local database from the kaggle source db
+- Make importing .csv faster
