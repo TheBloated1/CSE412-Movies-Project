@@ -115,19 +115,4 @@ class NetflixDB:
             self.conn.commit()
             return cur.fetchall()
         
-    def actors_in_genres(self):
-            with self._cursor() as cur:
-                cur.execute("""
-                            SELECT p.first_name, p.last_name,g.name as genre, COUNT(*) as total 
-                            FROM PERSON p 
-                            JOIN ACTOR a on p.person_id = a.actor_id JOIN 
-                            ACTEDIN ai ON a.actor_id = ai.ai_actor_id 
-                            JOIN MEDIA m on ai.ai_show_id = m.show_id 
-                            JOIN LISTEDIN li ON m.show_id = li.li_show_id 
-                            JOIN genre g ON li.li_genre_id = g.genre_id 
-                            GROUP BY p.first_name, p.last_name, g.name 
-                            ORDER BY total DESC LIMIT 20;
-
-                        """)
-            self.conn.commit()
-            return cur.fetchall()
+ 
