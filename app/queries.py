@@ -69,7 +69,7 @@ class NetflixDB:
             self.conn.commit()
 
     # ---------
-    # EXTRA
+    # SELECT
     # ---------
     def netflix_content_last_decade(self):
         with self._cursor() as cur: 
@@ -81,5 +81,53 @@ class NetflixDB:
                 GROUP BY release_year, type
                 ORDER BY release_year DESC, type;
             """)
+            self.conn.commit()
+            return cur.fetchall()
+    
+    def actors_top_genres(self):
+        with self._cursor() as cur:
+            cur.execute("""SELECT p.first_name, p.last_name,g.name as genre, COUNT(*) as total 
+                        FROM PERSON p 
+                        JOIN ACTOR a on p.person_id = a.actor_id 
+                        JOIN ACTEDIN ai ON a.actor_id = ai.ai_actor_id 
+                        JOIN MEDIA m on ai.ai_show_id = m.show_id
+                         JOIN LISTEDIN li ON m.show_id = li.li_show_id 
+                        JOIN genre g ON li.li_genre_id = g.genre_id 
+                        GROUP BY p.first_name, p.last_name, g.name 
+                        ORDER BY total DESC 
+                        LIMIT 20;
+                        """)
+            self.conn.commit()
+            return cur.fetchall()
+        
+    def countries_produced_genres(self):
+        with self._cursor() as cur:
+            cur.execute("""SELECT c.name AS country_name, g.name AS genre, COUNT(*) AS total
+                            FROM country c
+                            JOIN producedIn pi ON c.country_id = pi.p_country_id
+                            JOIN media m ON pi.p_show_id = m.show_id
+                            JOIN listedIn li ON m.show_id = li.li_show_id
+                            JOIN genre g ON li.li_genre_id = g.genre_id
+                            GROUP BY c.name, g.name
+                            ORDER BY total DESC
+                            LIMIT 20;
+                        """)
+            self.conn.commit()
+            return cur.fetchall()
+        
+    def actors_in_genres(self):
+            with self._cursor() as cur:
+                cur.execute("""
+                            SELECT p.first_name, p.last_name,g.name as genre, COUNT(*) as total 
+                            FROM PERSON p 
+                            JOIN ACTOR a on p.person_id = a.actor_id JOIN 
+                            ACTEDIN ai ON a.actor_id = ai.ai_actor_id 
+                            JOIN MEDIA m on ai.ai_show_id = m.show_id 
+                            JOIN LISTEDIN li ON m.show_id = li.li_show_id 
+                            JOIN genre g ON li.li_genre_id = g.genre_id 
+                            GROUP BY p.first_name, p.last_name, g.name 
+                            ORDER BY total DESC LIMIT 20;
+
+                        """)
             self.conn.commit()
             return cur.fetchall()
