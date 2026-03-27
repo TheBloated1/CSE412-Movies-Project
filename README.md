@@ -45,6 +45,5 @@ python3 database.py
 
 ## Project Todo
 
-- Add PostgreSQL (start server in run script and add psycopg2 dependency)
-- Build local database from the kaggle source db
 - Make importing .csv faster
+- Frontend work
