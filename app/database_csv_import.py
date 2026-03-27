@@ -1,6 +1,7 @@
 # Import netflix_titles.csv
 
 import csv
+import random
 #import psycopg2
 from psycopg2.extras import execute_values
 import pandas as pd
@@ -79,10 +80,14 @@ def import_csv_to_db(conn):
                 for c in countries:
                     country_id = None
                     if c not in country_country_id_map:
+                        # TODO: random box office placeholder, later on, when we find good
+                        # database, we can update this with real box office numbers
+                        random_boxoffice = random.randint(1000000, 1000000000)
+
                         # new country
                         cur.execute("""
-                        INSERT INTO country (name) VALUES (%s) ON CONFLICT (NAME) DO NOTHING RETURNING country_id;""", 
-                        (c,))
+                        INSERT INTO country (name, total_boxoffice) VALUES (%s, %s) ON CONFLICT (NAME) DO NOTHING RETURNING country_id;""", 
+                        (c, random_boxoffice))
                         country_id = cur.fetchone()[0]
                         country_country_id_map[c] = country_id
                     else:

@@ -64,7 +64,8 @@ def initDatabase(conn):
             cur.execute("""
             CREATE TABLE IF NOT EXISTS country (
                 country_id SERIAL PRIMARY KEY,
-                name VARCHAR(64) NOT NULL UNIQUE
+                name VARCHAR(64) NOT NULL UNIQUE,
+                total_boxoffice BIGINT
             );
             """)
             cur.execute("""
