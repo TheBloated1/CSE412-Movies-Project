@@ -1,6 +1,6 @@
 import os 
 import psycopg2
-from app import app
+from backend.app import app
 
 if __name__ == "__main__":
     # check if postgresql server is running before starting the flask server
