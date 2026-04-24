@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 
 export function loader() {
   return { name: "temp" };
